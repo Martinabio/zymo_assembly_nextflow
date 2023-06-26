@@ -96,7 +96,7 @@ process medaka_consensus {
 }
 
 workflow {
-    Channel.of(file(params.input_fastq, type="file", checkIfExists=True))
+    Channel.of(file(params.input_fastq, type="file", checkIfExists=true))
         .set {in_fastq_ch}
     
     porechop(in_fastq_ch)
