@@ -2,6 +2,8 @@ process porechop {
 
     label "process_medium"
 
+    container 'biowilko/zymo_assembly_nextflow:0.0.1'
+
     publishDir "${params.outdir}/trimmed_reads/", mode: 'copy'
 
     input:
@@ -19,6 +21,8 @@ process filtlong {
 
     label "process_low"
 
+    container 'biowilko/zymo_assembly_nextflow:0.0.1'
+
     publishDir "${params.outdir}/filtered_reads/", mode: 'copy'
 
     input:
@@ -35,6 +39,8 @@ process filtlong {
 process flye_assembly {
 
     label "process_high"
+
+    container 'biowilko/zymo_assembly_nextflow:0.0.1'
 
     publishDir "${params.outdir}/unpolished_contigs/", mode: 'copy'
 
@@ -54,6 +60,8 @@ process map_reads_to_assembly {
 
     label "process_medium"
 
+    container 'biowilko/zymo_assembly_nextflow:0.0.1'
+
     input:
     path flye_assembly
     path filtered_fastq
@@ -70,6 +78,8 @@ process map_reads_to_assembly {
 process medaka_consensus {
 
     label "process_high"
+
+    container 'biowilko/zymo_assembly_nextflow:0.0.1'
 
     publishDir "${params.outdir}/polished_contigs/", mode: 'copy'
 
