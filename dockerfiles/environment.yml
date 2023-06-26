@@ -1,4 +1,4 @@
-name: scylla
+name: zymo_assembly_nextflow
 channels:
   - bioconda
   - conda-forge
