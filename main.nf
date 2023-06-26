@@ -2,6 +2,8 @@ process porechop {
 
     label "process_medium"
 
+    publishDir "${params.outdir}/trimmed_reads/", mode: 'copy'
+
     input:
     path in_fastq
     output:
@@ -16,6 +18,8 @@ process porechop {
 process filtlong {
 
     label "process_low"
+
+    publishDir "${params.outdir}/filtered_reads/", mode: 'copy'
 
     input:
     path trimmed_fastq
@@ -32,6 +36,9 @@ process flye_assembly {
 
     label "process_high"
 
+    publishDir "${params.outdir}/unpolished_contigs/", mode: 'copy'
+
+
     input:
     path filtered_fastq
     output:
@@ -43,7 +50,7 @@ process flye_assembly {
     """
 }
 
-process reads_to_assembly {
+process map_reads_to_assembly {
 
     label "process_medium"
 
@@ -64,6 +71,8 @@ process medaka_consensus {
 
     label "process_high"
 
+    publishDir "${params.outdir}/polished_contigs/", mode: 'copy'
+
     input:
     path sorted_bam
 
@@ -80,6 +89,14 @@ workflow {
     Channel.of(file(params.input_fastq, type="file", checkIfExists=True))
         .set {in_fastq_ch}
     
-    porechop( )
+    porechop(in_fastq_ch)
+
+    filtlong(porechop.out)
+
+    flye_assembly(filtlong.out)
+
+    map_reads_to_assembly(flye_assembly.out, filtlong.out)
+
+    medaka_consensus(map_reads_to_assembly.out)
 }
 

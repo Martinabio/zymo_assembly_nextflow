@@ -1,0 +1,12 @@
+name: scylla
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - flye
+  - medaka
+  - samtools
+  - minimap2
+  - filtlong
+  - porechop
