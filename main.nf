@@ -1,6 +1,7 @@
 process porechop {
 
-    label "process_medium"
+    label 'process_medium'
+    label 'process_high_memory'
 
     container 'biowilko/zymo_assembly_nextflow:0.0.1'
 
