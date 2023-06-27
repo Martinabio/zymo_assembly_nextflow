@@ -15,7 +15,7 @@ process fastp {
     script:
 
     """
-    fastp --in1 ${fastq} --out1 trimmed.fastq.gz --thread $task.cpus --low_complexity_filter -e ${params.min_mean_qual} -l ${params.min_length} 2> fastp.log
+    fastp --in1 ${in_fastq} --out1 trimmed.fastq.gz --thread $task.cpus --low_complexity_filter -e ${params.min_mean_qual} -l ${params.min_length} 2> fastp.log
     """
 
 }
