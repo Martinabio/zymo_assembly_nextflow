@@ -83,11 +83,11 @@ workflow {
     Channel.of(file(params.input_fastq, type: "file", checkIfExists: true))
         .set {in_fastq_ch}
     
-    pychopper(in_fastq_ch)
+    fastp(in_fastq_ch)
 
-    flye_assembly(pychopper.out)
+    flye_assembly(fastp.out)
 
-    map_reads_to_assembly(flye_assembly.out, pychopper.out)
+    map_reads_to_assembly(flye_assembly.out, fastp.out)
 
     medaka_consensus(map_reads_to_assembly.out)
 }
