@@ -1,5 +1,6 @@
 name: zymo_assembly_nextflow
 channels:
+  - nanoporetech
   - bioconda
   - conda-forge
   - defaults
@@ -8,5 +9,4 @@ dependencies:
   - medaka
   - samtools
   - minimap2
-  - filtlong
-  - porechop
+  - pychopper

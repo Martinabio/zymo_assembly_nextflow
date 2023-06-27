@@ -1,9 +1,8 @@
-process porechop {
+process pychopper {
 
     label 'process_medium'
-    label 'process_high_memory'
 
-    container 'biowilko/zymo_assembly_nextflow:0.0.1'
+    container 'biowilko/zymo_assembly_nextflow:0.0.2'
 
     publishDir "${params.outdir}/trimmed_reads/", mode: 'copy'
 
@@ -14,34 +13,15 @@ process porechop {
 
     script:
     """
-    porechop -i ${in_fastq} -o trimmed.fastq -t $task.cpus
+    pychopper -t $task.cpus -Q ${params.min_mean_qual} -z ${params.min_length} ${in_fastq} trimmed.fastq
     """
-}
-
-process filtlong {
-
-    label "process_low"
-
-    container 'biowilko/zymo_assembly_nextflow:0.0.1'
-
-    publishDir "${params.outdir}/filtered_reads/", mode: 'copy'
-
-    input:
-    path trimmed_fastq
-    output:
-    path "filtered.fastq"
-
-    """
-    filtlong --min-length ${params.min_length} --min_mean_q ${params.min_mean_qual} ${trimmed_fastq} > filtered.fastq
-    """
-
 }
 
 process flye_assembly {
 
     label "process_high"
 
-    container 'biowilko/zymo_assembly_nextflow:0.0.1'
+    container 'biowilko/zymo_assembly_nextflow:0.0.2'
 
     publishDir "${params.outdir}/unpolished_contigs/", mode: 'copy'
 
@@ -61,7 +41,7 @@ process map_reads_to_assembly {
 
     label "process_medium"
 
-    container 'biowilko/zymo_assembly_nextflow:0.0.1'
+    container 'biowilko/zymo_assembly_nextflow:0.0.2'
 
     input:
     path flye_assembly
@@ -80,7 +60,7 @@ process medaka_consensus {
 
     label "process_high"
 
-    container 'biowilko/zymo_assembly_nextflow:0.0.1'
+    container 'biowilko/zymo_assembly_nextflow:0.0.2'
 
     publishDir "${params.outdir}/polished_contigs/", mode: 'copy'
 
@@ -100,11 +80,9 @@ workflow {
     Channel.of(file(params.input_fastq, type: "file", checkIfExists: true))
         .set {in_fastq_ch}
     
-    porechop(in_fastq_ch)
+    pychopper(in_fastq_ch)
 
-    filtlong(porechop.out)
-
-    flye_assembly(filtlong.out)
+    flye_assembly(pychopper.out)
 
     map_reads_to_assembly(flye_assembly.out, filtlong.out)
 
