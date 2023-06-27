@@ -1,6 +1,6 @@
 process pychopper {
 
-    label 'process_medium'
+    label 'process_high'
 
     container 'biowilko/zymo_assembly_nextflow:0.0.2'
 
