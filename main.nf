@@ -84,7 +84,7 @@ workflow {
 
     flye_assembly(pychopper.out)
 
-    map_reads_to_assembly(flye_assembly.out, filtlong.out)
+    map_reads_to_assembly(flye_assembly.out, pychopper.out)
 
     medaka_consensus(map_reads_to_assembly.out)
 }
