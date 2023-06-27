@@ -9,4 +9,4 @@ dependencies:
   - medaka
   - samtools
   - minimap2
-  - pychopper
+  - fastp

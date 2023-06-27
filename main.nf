@@ -1,27 +1,30 @@
-process pychopper {
+process fastp {
+    
+    label 'process_medium'
 
-    label 'process_high'
+    publishDir "${params.outdir}/fastp/", mode: 'copy'
 
-    container 'biowilko/zymo_assembly_nextflow:0.0.2'
-
-    publishDir "${params.outdir}/trimmed_reads/", mode: 'copy'
+    container 'biowilko/zymo_assembly_nextflow:0.0.3'
 
     input:
-    path in_fastq
+        path in_fastq
+
     output:
-    path "trimmed.fastq"
+        path "trimmed.fastq.gz"
 
     script:
+
     """
-    pychopper -t $task.cpus -Q ${params.min_mean_qual} -z ${params.min_length} ${in_fastq} trimmed.fastq
+    fastp --in1 ${fastq} --out1 trimmed.fastq.gz --thread $task.cpus --low_complexity_filter -e ${params.min_mean_qual} -l ${params.min_length} 2> fastp.log
     """
+
 }
 
 process flye_assembly {
 
     label "process_high"
 
-    container 'biowilko/zymo_assembly_nextflow:0.0.2'
+    container 'biowilko/zymo_assembly_nextflow:0.0.3'
 
     publishDir "${params.outdir}/unpolished_contigs/", mode: 'copy'
 
@@ -41,7 +44,7 @@ process map_reads_to_assembly {
 
     label "process_medium"
 
-    container 'biowilko/zymo_assembly_nextflow:0.0.2'
+    container 'biowilko/zymo_assembly_nextflow:0.0.3'
 
     input:
     path flye_assembly
@@ -60,7 +63,7 @@ process medaka_consensus {
 
     label "process_high"
 
-    container 'biowilko/zymo_assembly_nextflow:0.0.2'
+    container 'biowilko/zymo_assembly_nextflow:0.0.3'
 
     publishDir "${params.outdir}/polished_contigs/", mode: 'copy'
 
