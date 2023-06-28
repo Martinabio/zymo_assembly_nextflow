@@ -45,8 +45,6 @@ process porechop {
 
     container 'biowilko/porechop:0.1'
 
-    publishDir "${params.outdir}/trimmed_reads/", mode: 'copy'
-
     input:
     path in_fastq
     output:
@@ -128,7 +126,7 @@ workflow {
     porechop(fastp.out)
 
     porechop.out
-        .collectFile()
+        .collectFile(name: "${params.outdir}/combined_trimmed_and_filtered.fastq", newLine: true)
         .set {combined_fastq_ch}
 
     flye_assembly(combined_fastq_ch)
