@@ -123,7 +123,11 @@ workflow {
     
     fastq_split(in_fastq_ch)
 
-    fastp(fastq_split.out)
+    fastq_split.out
+        .flatten()
+        .set { split_fastq_ch }
+
+    fastp(split_fastq_ch)
 
     porechop(fastp.out)
 
