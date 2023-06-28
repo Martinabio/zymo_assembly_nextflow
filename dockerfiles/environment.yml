@@ -1,12 +1,9 @@
-name: zymo_assembly_nextflow
+name: porechop
 channels:
-  - nanoporetech
   - bioconda
   - conda-forge
   - defaults
 dependencies:
-  - flye
-  - medaka
-  - samtools
-  - minimap2
-  - fastp
+  - pip
+  - pip:
+    - git+https://github.com/BioWilko/Porechop.git@d8dcdb6001f2f1d923b78eacbae9f07c22588467

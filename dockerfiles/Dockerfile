@@ -1,9 +1,9 @@
-FROM condaforge/mambaforge:latest AS conda
+FROM ubuntu:20.04
 
-COPY environment.yml .
+RUN apt-get update && apt-get install -y \
+    git \
+    pip
 
-RUN /opt/conda/bin/mamba env create -f /environment.yml
-
-ENV PATH=/opt/conda/envs/zymo_assembly_nextflow/bin:$PATH
+RUN pip3 install git+https://github.com/biowilko/Porechop.git
 
 CMD ["/bin/bash"]

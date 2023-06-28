@@ -1,30 +1,68 @@
-process fastp {
+process fastq_split {
     
-    label 'process_medium'
+    label 'process_single'
 
-    publishDir "${params.outdir}/fastp/", mode: 'copy'
-
-    container 'biowilko/zymo_assembly_nextflow:0.0.3'
+    container 'biocontainers/seqtk:1.4--he4a0461_1'
 
     input:
         path in_fastq
 
     output:
-        path "trimmed.fastq.gz"
+        path "*.fa"
 
     script:
 
     """
-    fastp --in1 ${in_fastq} --out1 trimmed.fastq.gz --thread $task.cpus --low_complexity_filter -e ${params.min_mean_qual} -l ${params.min_length} 2> fastp.log
+    seqtk split -n ${params.splits} split ${in_fastq}
     """
 
+}
+
+process fastp {
+    
+    label 'process_medium'
+
+    container 'biocontainers/fastp:0.23.4--hadf994f_1'
+
+    input:
+        path in_fastq
+
+    output:
+        path "${in_fastq.getBaseName()}.filtered.fastq"
+
+    script:
+
+    """
+    mv ${in_fastq} ${in_fastq.getBaseName()}.fastq
+    fastp --in1 ${in_fastq.getBaseName()}.fastq --out1 ${in_fastq.getBaseName()}.filtered.fastq --thread $task.cpus --low_complexity_filter -e ${params.min_mean_qual} -l ${params.min_length} 2> fastp.log
+    """
+
+}
+
+process porechop {
+
+    label 'process_medium'
+
+    container 'biowilko/porechop:0.1'
+
+    publishDir "${params.outdir}/trimmed_reads/", mode: 'copy'
+
+    input:
+    path in_fastq
+    output:
+    path "trimmed.fastq"
+
+    script:
+    """
+    porechop -i ${in_fastq} -o trimmed.fastq -t $task.cpus
+    """
 }
 
 process flye_assembly {
 
     label "process_high"
 
-    container 'biowilko/zymo_assembly_nextflow:0.0.3'
+    container 'biocontainers/flye:2.9.2--py310h2b6aa90_2'
 
     publishDir "${params.outdir}/unpolished_contigs/", mode: 'copy'
 
@@ -44,7 +82,7 @@ process map_reads_to_assembly {
 
     label "process_medium"
 
-    container 'biowilko/zymo_assembly_nextflow:0.0.3'
+    container 'biocontainers/minimap2:2.26--he4a0461_1'
 
     input:
     path flye_assembly
@@ -63,7 +101,7 @@ process medaka_consensus {
 
     label "process_high"
 
-    container 'biowilko/zymo_assembly_nextflow:0.0.3'
+    container 'biocontainers/medaka:1.8.0--py38hdaa7744_0'
 
     publishDir "${params.outdir}/polished_contigs/", mode: 'copy'
 
@@ -83,11 +121,19 @@ workflow {
     Channel.of(file(params.input_fastq, type: "file", checkIfExists: true))
         .set {in_fastq_ch}
     
-    fastp(in_fastq_ch)
+    fastq_split(in_fastq_ch)
 
-    flye_assembly(fastp.out)
+    fastp(fastq_split.out)
 
-    map_reads_to_assembly(flye_assembly.out, fastp.out)
+    porechop(fastp.out)
+
+    porechop.out
+        .concat()
+        .set {combined_fastq_ch}
+
+    flye_assembly(combined_fastq_ch)
+
+    map_reads_to_assembly(flye_assembly.out, combined_fastq_ch)
 
     medaka_consensus(map_reads_to_assembly.out)
 }
