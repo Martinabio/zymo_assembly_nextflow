@@ -28,13 +28,15 @@ process fastp {
         path in_fastq
 
     output:
-        path "${in_fastq.getBaseName()}.filtered.fastq"
+        path "${fastq_name}.filtered.fastq"
 
     script:
 
+    fastq_name = in_fastq.getBaseName()
+
     """
-    mv ${in_fastq} ${in_fastq.getBaseName()}.fastq
-    fastp --in1 ${in_fastq.getBaseName()}.fastq --out1 ${in_fastq.getBaseName()}.filtered.fastq --thread $task.cpus --low_complexity_filter -e ${params.min_mean_qual} -l ${params.min_length} 2> fastp.log
+    mv ${in_fastq} ${fastq_name}.fastq
+    fastp --in1 ${fastq_name}.fastq --out1 ${fastq_name}.filtered.fastq --thread $task.cpus --low_complexity_filter -e ${params.min_mean_qual} -l ${params.min_length} 2> fastp.log
     """
 
 }
