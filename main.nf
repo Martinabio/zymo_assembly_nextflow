@@ -128,7 +128,7 @@ workflow {
     porechop(fastp.out)
 
     porechop.out
-        .concat()
+        .collectFile()
         .set {combined_fastq_ch}
 
     flye_assembly(combined_fastq_ch)
