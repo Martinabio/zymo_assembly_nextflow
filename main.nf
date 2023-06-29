@@ -43,7 +43,7 @@ process fastp {
 
 process porechop {
 
-    label 'process_medium'
+    label 'process_high'
 
     container 'biowilko/porechop:0.1'
 
@@ -132,7 +132,7 @@ workflow {
     porechop(fastp.out)
 
     porechop.out
-        .collectFile(name: "${params.outdir}/combined_trimmed_and_filtered.fastq", newLine: true)
+        .collectFile(name: "${params.outdir}/combined_trimmed_and_filtered.fastq", newLine: false)
         .set {combined_fastq_ch}
 
     flye_assembly(combined_fastq_ch)
