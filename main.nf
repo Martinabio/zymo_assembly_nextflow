@@ -20,7 +20,7 @@ process fastq_split {
 
 process fastp {
     
-    label 'process_medium'
+    label 'process_high'
 
     container 'biocontainers/fastp:0.23.4--hadf994f_1'
 
