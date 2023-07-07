@@ -98,7 +98,7 @@ process map_reads_to_assembly {
     """
 }
 
-process sort_bam {
+process sort_and_index_bam {
 
     label "process_medium"
 
@@ -111,10 +111,11 @@ process sort_bam {
 
     output:
     path "sorted.bam"
+    path "sorted.bam.bai"
 
     script:
     """
-    samtools sort -O BAM -o sorted.bam --threads $task.cpus ${unsorted_sam}
+    samtools sort -O BAM -o sorted.bam --threads $task.cpus ${unsorted_sam} && samtools index sorted.bam
     """
 }
 
@@ -128,6 +129,7 @@ process medaka_consensus {
 
     input:
     path sorted_bam
+    path sorted_bam_index
 
     output:
     path "polished_contigs.fasta"
@@ -164,7 +166,7 @@ workflow {
 
     map_reads_to_assembly(flye_assembly.out, combined_fastq_ch)
 
-    sort_bam(map_reads_to_assembly.out)
+    sort_and_index_bam(map_reads_to_assembly.out)
 
     medaka_consensus(sort_bam.out)
 }
