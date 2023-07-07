@@ -90,11 +90,29 @@ process map_reads_to_assembly {
     path filtered_fastq
 
     output:
+    path "unsorted.sam"
+
+    script:
+    """
+    minimap2 -a -x map-ont -t $task.cpus ${flye_assembly} ${filtered_fastq} > unsorted.sam
+    """
+}
+
+process sort_bam {
+
+    label "process_medium"
+
+    container 'biocontainers/samtools:1.3.1--h0cf4675_11'
+
+    input:
+    path unsorted_sam
+
+    output:
     path "sorted.bam"
 
     script:
     """
-    minimap2 -a -x map-ont -t $task.cpus ${flye_assembly} ${filtered_fastq} | samtools sort -o sorted.bam
+    samtools sort -O BAM -o sorted.bam --threads $task.cpus ${unsorted_sam}
     """
 }
 
@@ -144,6 +162,8 @@ workflow {
 
     map_reads_to_assembly(flye_assembly.out, combined_fastq_ch)
 
-    medaka_consensus(map_reads_to_assembly.out)
+    sort_bam(map_reads_to_assembly.out)
+
+    medaka_consensus(sort_bam.out)
 }
 
