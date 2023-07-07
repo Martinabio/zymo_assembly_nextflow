@@ -64,13 +64,9 @@ process flye_assembly {
     label "process_high_memory"
     label "process_long"
 
-    maxRetries 2
-
     container 'biocontainers/flye:2.9.2--py310h2b6aa90_2'
 
     publishDir "${params.outdir}/unpolished_contigs/", mode: 'copy'
-
-    errorStrategy 'retry'
 
     input:
     path filtered_fastq
