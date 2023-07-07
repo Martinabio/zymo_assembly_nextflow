@@ -121,12 +121,16 @@ process medaka_consensus {
 workflow {
     Channel.of(file(params.input_fastq, type: "file", checkIfExists: true))
         .set {in_fastq_ch}
-    
-    fastq_split(in_fastq_ch)
 
-    fastq_split.out
-        .flatten()
-        .set { split_fastq_ch }
+    if (params.split) {
+        fastq_split(in_fastq_ch)
+        fastq_split.out
+            .flatten()
+            .set { split_fastq_ch }
+    } else {
+        in_fastq_ch
+            .set { split_fastq_ch }
+    }
 
     fastp(split_fastq_ch)
 
