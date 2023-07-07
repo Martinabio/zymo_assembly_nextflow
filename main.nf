@@ -168,6 +168,6 @@ workflow {
 
     sort_and_index_bam(map_reads_to_assembly.out)
 
-    medaka_consensus(sort_bam.out)
+    medaka_consensus(sort_and_index_bam.out)
 }
 
