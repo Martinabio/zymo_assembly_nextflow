@@ -132,7 +132,7 @@ process medaka_consensus {
 
     script:
     """
-    medaka polish --threads $task.cpus --model ${params.medaka_model} ${sorted_bam} polished_contigs.fasta
+    medaka consensus --threads $task.cpus --model ${params.medaka_model} ${sorted_bam} polished_contigs.fasta
     """
 }
 
