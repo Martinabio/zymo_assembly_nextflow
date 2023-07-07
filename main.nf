@@ -104,6 +104,8 @@ process sort_bam {
 
     container 'biocontainers/samtools:1.3.1--h0cf4675_11'
 
+    publishDir "${params.outdir}/sorted_bam/", mode: 'copy'
+
     input:
     path unsorted_sam
 
