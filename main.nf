@@ -75,7 +75,7 @@ process flye_assembly {
 
     script:
     """
-    flye --nano-raw ${filtered_fastq} -o flye_output -g ${params.flye_genome_size} -t $task.cpus -i ${params.flye_iterations}
+    flye --nano-corr ${filtered_fastq} -o flye_output --meta -t $task.cpus -i ${params.flye_iterations}
     """
 }
 
@@ -130,13 +130,16 @@ process medaka_consensus {
     input:
     path sorted_bam
     path sorted_bam_index
+    path unpolished_contigs
 
     output:
     path "polished_contigs.fasta"
 
     script:
     """
-    medaka consensus --threads $task.cpus --model ${params.medaka_model} ${sorted_bam} polished_contigs.fasta
+    medaka consensus --threads $task.cpus --model ${params.medaka_model} ${sorted_bam} polished_contigs.hdf
+
+    medaka stitch --threads $task.cpus polished_contigs.hdf ${unpolished_contigs} polished_contigs.fasta
     """
 }
 
@@ -168,6 +171,6 @@ workflow {
 
     sort_and_index_bam(map_reads_to_assembly.out)
 
-    medaka_consensus(sort_and_index_bam.out)
+    medaka_consensus(sort_and_index_bam.out, flye_assembly.out)
 }
 
