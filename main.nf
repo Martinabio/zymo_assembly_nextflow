@@ -153,8 +153,8 @@ workflow {
 
     flye_assembly(combined_fastq_ch)
 
-    Channel
-        .value(flye_assembly.out)
+    flye_assembly.out
+        .collect()
         .set { flye_assembly_ch}
 
     racon_polish_wf
