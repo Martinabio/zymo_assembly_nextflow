@@ -1,4 +1,4 @@
-include {racon_polish_wf} from './subworkflow/racon_polish.nf'
+include {racon_polish_wf, map_reads_to_assembly} from './subworkflow/racon_polish.nf'
 
 process fastq_split {
     
@@ -78,25 +78,6 @@ process flye_assembly {
     script:
     """
     flye --nano-corr ${filtered_fastq} -o flye_output --meta -t $task.cpus -i ${params.flye_iterations}
-    """
-}
-
-process map_reads_to_assembly {
-
-    label "process_medium"
-
-    container 'biocontainers/minimap2:2.26--he4a0461_1'
-
-    input:
-    path flye_assembly
-    path filtered_fastq
-
-    output:
-    path "unsorted.sam"
-
-    script:
-    """
-    minimap2 -a -x map-ont -t $task.cpus ${flye_assembly} ${filtered_fastq} > unsorted.sam
     """
 }
 

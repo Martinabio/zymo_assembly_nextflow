@@ -1,4 +1,21 @@
-include {map_reads_to_assembly} from '../main.nf'
+process map_reads_to_assembly {
+
+    label "process_medium"
+
+    container 'biocontainers/minimap2:2.26--he4a0461_1'
+
+    input:
+    path flye_assembly
+    path filtered_fastq
+
+    output:
+    path "unsorted.sam"
+
+    script:
+    """
+    minimap2 -a -x map-ont -t $task.cpus ${flye_assembly} ${filtered_fastq} > unsorted.sam
+    """
+}
 
 process racon_polish {
 
