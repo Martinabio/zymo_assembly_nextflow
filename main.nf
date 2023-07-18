@@ -166,6 +166,6 @@ workflow {
 
     sort_convert_index_sam(map_reads_to_assembly.out)
 
-    medaka_consensus(map_reads_to_assembly.out, racon_polish_wf.out.contigs)
+    medaka_consensus(sort_convert_index_sam.out, racon_polish_wf.out.contigs)
 }
 
