@@ -61,6 +61,8 @@ process porechop {
 process flye_assembly {
 
     label "process_high"
+    label "process_high_memory"
+    label "process_long"
 
     container 'biocontainers/flye:2.9.2--py310h2b6aa90_2'
 
@@ -74,7 +76,7 @@ process flye_assembly {
 
     script:
     """
-    flye --nano-raw ${filtered_fastq} -o flye_output -g ${params.flye_genome_size} -t $task.cpus -i ${params.flye_iterations}
+    flye --nano-corr ${filtered_fastq} -o flye_output --meta -t $task.cpus -i ${params.flye_iterations}
     """
 }
 
@@ -89,15 +91,35 @@ process map_reads_to_assembly {
     path filtered_fastq
 
     output:
-    path "sorted.bam"
+    path "unsorted.bam"
 
     script:
     """
-    minimap2 -a -x map-ont -t $task.cpus ${flye_assembly} ${filtered_fastq} | samtools sort -o sorted.bam
+    minimap2 -a -x map-ont -t $task.cpus ${flye_assembly} ${filtered_fastq} > unsorted.bam
     """
 }
 
+process sort_and_index_bam {
+    label "process_medium"
+    container 'biocontainers/samtools:1.3.1--h0cf4675_11'
+    publishDir "${params.outdir}/sorted_bam/", mode: 'copy'
+
+    input:
+    path unsorted_sam
+
+    output:
+    path "sorted.bam"
+    path "sorted.bam.bai"
+
+    script:
+    """
+    samtools sort -O BAM -o sorted.bam --threads $task.cpus ${unsorted_sam} && samtools index sorted.bam
+    """
+}
+
+
 process medaka_consensus {
+
 
     label "process_high"
 
@@ -107,13 +129,36 @@ process medaka_consensus {
 
     input:
     path sorted_bam
+    path sorted_bam_index
+    path unpolished_contigs
 
     output:
     path "polished_contigs.fasta"
 
     script:
     """
-    medaka polish --threads $task.cpus --model ${params.medaka_model} ${sorted_bam} polished_contigs.fasta
+    medaka consensus --threads $task.cpus --model ${params.medaka_model} ${sorted_bam} polished_contigs.hdf
+
+    medaka stitch --threads $task.cpus polished_contigs.hdf ${unpolished_contigs} polished_contigs.fasta
+    """
+}
+
+process racon_consensus {
+    label "process_high"
+    container 'biocontainers/racon'
+    publishDir "${params.outdir}/racon_polished_contigs", mode: 'copy'
+
+    input:
+    path sorted_bam
+    path sorted_bam_index
+    path unpolished_contigs
+
+    output:
+    path "racon_polished_contigs.fasta"
+
+    script:
+    """
+    racon consensus --threads $task.cpus -u -i ${params.racon_iterations} ${sorted_bam} ${sorted_bam_index} ${unpolished_contigs} > ${unpolished_contigs} racon_polished_contigs.fasta 
     """
 }
 
@@ -135,9 +180,11 @@ workflow {
         .collectFile(name: "${params.outdir}/combined_trimmed_and_filtered.fastq", newLine: false)
         .set {combined_fastq_ch}
 
-    flye_assembly(combined_fastq_ch)
+    flye_assembly(combined_fastq_ch) 
 
     map_reads_to_assembly(flye_assembly.out, combined_fastq_ch)
+
+    racon_consensus(map_reads_to_assembly.out)
 
     medaka_consensus(map_reads_to_assembly.out)
 }
