@@ -6,4 +6,6 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip3 install git+https://github.com/biowilko/Porechop.git
 
+ENV PATH=/opt/bin:$PATH
+
 CMD ["/bin/bash"]

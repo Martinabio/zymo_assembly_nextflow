@@ -68,7 +68,6 @@ process flye_assembly {
 
     publishDir "${params.outdir}/unpolished_contigs/", mode: 'copy'
 
-
     input:
     path filtered_fastq
     output:
@@ -89,23 +88,6 @@ process map_reads_to_assembly {
     input:
     path flye_assembly
     path filtered_fastq
-
-    output:
-    path "unsorted.bam"
-
-    script:
-    """
-    minimap2 -a -x map-ont -t $task.cpus ${flye_assembly} ${filtered_fastq} > unsorted.bam
-    """
-}
-
-process sort_and_index_bam {
-    label "process_medium"
-    container 'biocontainers/samtools:1.3.1--h0cf4675_11'
-    publishDir "${params.outdir}/sorted_bam/", mode: 'copy'
-
-    input:
-    path unsorted_sam
 
     output:
     path "sorted.bam"
@@ -137,40 +119,23 @@ process medaka_consensus {
 
     script:
     """
-    medaka consensus --threads $task.cpus --model ${params.medaka_model} ${sorted_bam} polished_contigs.hdf
-
-    medaka stitch --threads $task.cpus polished_contigs.hdf ${unpolished_contigs} polished_contigs.fasta
-    """
-}
-
-process racon_consensus {
-    label "process_high"
-    container 'biocontainers/racon'
-    publishDir "${params.outdir}/racon_polished_contigs", mode: 'copy'
-
-    input:
-    path sorted_bam
-    path sorted_bam_index
-    path unpolished_contigs
-
-    output:
-    path "racon_polished_contigs.fasta"
-
-    script:
-    """
-    racon consensus --threads $task.cpus -u -i ${params.racon_iterations} ${sorted_bam} ${sorted_bam_index} ${unpolished_contigs} > ${unpolished_contigs} racon_polished_contigs.fasta 
+    medaka polish --threads $task.cpus --model ${params.medaka_model} ${sorted_bam} polished_contigs.fasta
     """
 }
 
 workflow {
     Channel.of(file(params.input_fastq, type: "file", checkIfExists: true))
         .set {in_fastq_ch}
-    
-    fastq_split(in_fastq_ch)
 
-    fastq_split.out
-        .flatten()
-        .set { split_fastq_ch }
+    if (params.split) {
+        fastq_split(in_fastq_ch)
+        fastq_split.out
+            .flatten()
+            .set { split_fastq_ch }
+    } else {
+        in_fastq_ch
+            .set { split_fastq_ch }
+    }
 
     fastp(split_fastq_ch)
 
@@ -186,6 +151,8 @@ workflow {
 
     racon_consensus(map_reads_to_assembly.out)
 
-    medaka_consensus(map_reads_to_assembly.out)
+    sort_and_index_bam(map_reads_to_assembly.out)
+
+    medaka_consensus(sort_and_index_bam.out, flye_assembly.out)
 }
 
