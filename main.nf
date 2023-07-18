@@ -1,5 +1,7 @@
 include {racon_polish_wf; map_reads_to_assembly} from './subworkflow/racon_polish.nf'
 
+nextflow.preview.recursion=true
+
 process fastq_split {
     
     label 'process_single'
