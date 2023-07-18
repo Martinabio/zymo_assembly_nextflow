@@ -1,3 +1,5 @@
+include {racon_polish_wf} from './subworkflow/racon_polish.nf'
+
 process fastq_split {
     
     label 'process_single'
@@ -90,6 +92,26 @@ process map_reads_to_assembly {
     path filtered_fastq
 
     output:
+    path "unsorted.sam"
+
+    script:
+    """
+    minimap2 -a -x map-ont -t $task.cpus ${flye_assembly} ${filtered_fastq} > unsorted.sam
+    """
+}
+
+process sort_convert_index_sam {
+
+    label "process_medium"
+
+    container 'biocontainers/samtools:1.3.1--h0cf4675_11'
+
+    publishDir "${params.outdir}/sorted_bam/", mode: 'copy'
+
+    input:
+    path unsorted_sam
+
+    output:
     path "sorted.bam"
     path "sorted.bam.bai"
 
@@ -101,7 +123,6 @@ process map_reads_to_assembly {
 
 
 process medaka_consensus {
-
 
     label "process_high"
 
@@ -119,7 +140,9 @@ process medaka_consensus {
 
     script:
     """
-    medaka polish --threads $task.cpus --model ${params.medaka_model} ${sorted_bam} polished_contigs.fasta
+    medaka consensus --threads $task.cpus --model ${params.medaka_model} ${sorted_bam} polished_contigs.hdf
+
+    medaka stitch --threads $task.cpus polished_contigs.hdf ${unpolished_contigs} polished_contigs.fasta
     """
 }
 
@@ -147,12 +170,14 @@ workflow {
 
     flye_assembly(combined_fastq_ch) 
 
-    map_reads_to_assembly(flye_assembly.out, combined_fastq_ch)
+    racon_polish_wf
+        .recurse(flye_assembly.out, combined_fastq_ch)
+        .times(4)
 
-    racon_consensus(map_reads_to_assembly.out)
+    map_reads_to_assembly(racon_polish_wf.out)
 
-    sort_and_index_bam(map_reads_to_assembly.out)
+    sort_convert_index_sam(map_reads_to_assembly.out)
 
-    medaka_consensus(sort_and_index_bam.out, flye_assembly.out)
+    medaka_consensus(map_reads_to_assembly.out, racon_polish_wf.out.contigs)
 }
 
