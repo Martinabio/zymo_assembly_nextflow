@@ -149,6 +149,7 @@ workflow {
 
     porechop.out
         .collectFile(name: "${params.outdir}/combined_trimmed_and_filtered.fastq", newLine: false)
+        .collect()
         .set {combined_fastq_ch}
 
     flye_assembly(combined_fastq_ch)
