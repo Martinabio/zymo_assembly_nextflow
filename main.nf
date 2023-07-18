@@ -151,10 +151,13 @@ workflow {
         .collectFile(name: "${params.outdir}/combined_trimmed_and_filtered.fastq", newLine: false)
         .set {combined_fastq_ch}
 
-    flye_assembly(combined_fastq_ch) 
+    flye_assembly(combined_fastq_ch)
+
+    flye_assembly.out
+        .set { flye_assembly_ch}
 
     racon_polish_wf
-        .recurse(flye_assembly.out, combined_fastq_ch)
+        .recurse(flye_assembly_ch, combined_fastq_ch)
         .times(4)
 
     map_reads_to_assembly(racon_polish_wf.out)
