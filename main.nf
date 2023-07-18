@@ -1,4 +1,4 @@
-include {racon_polish_wf, map_reads_to_assembly} from './subworkflow/racon_polish.nf'
+include {racon_polish_wf; map_reads_to_assembly} from './subworkflow/racon_polish.nf'
 
 process fastq_split {
     
