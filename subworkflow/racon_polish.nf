@@ -32,11 +32,12 @@ process racon_polish {
 
     output:
     path "${fastq_reads}", emit: reads
-    path "racon_polished_contigs.fasta", emit: polished_contigs
+    path "racon_contigs.fasta", emit: polished_contigs
 
     script:
     """
     racon --threads $task.cpus ${fastq_reads} ${sam_file} ${unpolished_contigs} > racon_polished_contigs.fasta 
+    mv racon_polished_contigs.fasta racon_contigs.fasta
     """
 }
 
