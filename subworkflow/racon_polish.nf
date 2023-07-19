@@ -36,7 +36,7 @@ process racon_polish {
 
     script:
     """
-    racon consensus --threads $task.cpus ${fastq_reads} ${sam_file} ${unpolished_contigs} > racon_polished_contigs.fasta 
+    racon --threads $task.cpus ${fastq_reads} ${sam_file} ${unpolished_contigs} > racon_polished_contigs.fasta 
     """
 }
 
