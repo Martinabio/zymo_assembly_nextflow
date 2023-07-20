@@ -65,7 +65,7 @@ process porechop {
 process flye_assembly {
 
     label "process_high"
-    label "process_high_memory"
+    label "process_extreme_memory"
     label "process_long"
 
     container 'biocontainers/flye:2.9.2--py310h2b6aa90_2'
