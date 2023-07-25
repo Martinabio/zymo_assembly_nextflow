@@ -69,15 +69,17 @@ process sort_fastq {
 
     container 'biocontainers/seqkit:2.5.0--h9ee0642_0'
 
+    publishDir "${params.outdir}/"
+
     input:
     path in_fastq
 
     output:
-    path in_fastq
+    path "sorted_reads.fastq"
 
     script:
     """
-    seqkit sort --reverse -l --threads $task.cpus ${in_fastq}
+    seqkit sort --reverse -l --threads $task.cpus ${in_fastq} > sorted_reads.fastq
     """
 
 }
