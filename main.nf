@@ -62,6 +62,26 @@ process porechop {
     """
 }
 
+process sort_fastq {
+
+    label 'process_high'
+    label 'process_extreme_memory'
+
+    container 'biocontainers/seqkit:2.5.0--h9ee0642_0'
+
+    input:
+    path in_fastq
+
+    output:
+    path in_fastq
+
+    script:
+    """
+    seqkit sort --reverse -l -t $task.cpus ${in_fastq}
+    """
+
+}
+
 process flye_assembly {
 
     label "process_high"
@@ -152,7 +172,9 @@ workflow {
         .collect()
         .set {combined_fastq_ch}
 
-    flye_assembly(combined_fastq_ch)
+    sort_fastq(combined_fastq_ch)
+
+    flye_assembly(sort_fastq.out)
 
     flye_assembly.out
         .collect()
