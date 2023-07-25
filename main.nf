@@ -77,7 +77,7 @@ process sort_fastq {
 
     script:
     """
-    seqkit sort --reverse -l -t $task.cpus ${in_fastq}
+    seqkit sort --reverse -l --threads $task.cpus ${in_fastq}
     """
 
 }
