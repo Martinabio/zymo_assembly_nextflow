@@ -17,6 +17,6 @@ RUN conda clean -afy
 
 RUN mkdir metaMDBG/build && cd metaMDBG/build && cmake .. && make -j 3
 
-ENV PATH=metaMDBG/build/bin:$PATH
+ENV PATH="$PATH:/metaMDBG/build/bin"
 
 CMD ["/bin/bash"]

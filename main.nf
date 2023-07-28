@@ -101,7 +101,7 @@ process assembly {
 
     script:
     """
-    /metaMDBG/build/bin/metaMDBG asm -t $task.cpus metamdbg_out/ ${filtered_fastq}
+    metaMDBG asm -t $task.cpus metamdbg_out/ ${filtered_fastq}
     """
 }
 
