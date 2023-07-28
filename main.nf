@@ -90,7 +90,7 @@ process assembly {
     label "process_extreme_memory"
     label "process_long"
 
-    container 'biowilko/metamdbg:0.3'
+    container 'biowilko/metamdbg:latest'
 
     publishDir "${params.outdir}/unpolished_contigs/", mode: 'copy'
 
