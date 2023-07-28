@@ -174,16 +174,16 @@ workflow {
         .collect()
         .set {combined_fastq_ch}
 
-    sort_fastq(combined_fastq_ch)
+    // sort_fastq(combined_fastq_ch)
 
-    flye_assembly(sort_fastq.out)
+    assembly(combined_fastq_ch)
 
-    flye_assembly.out
+    assembly.out
         .collect()
-        .set { flye_assembly_ch}
+        .set { assembly_ch}
 
     racon_polish_wf
-        .recurse(flye_assembly_ch, combined_fastq_ch)
+        .recurse(assembly_ch, combined_fastq_ch)
         .times(4)
 
     map_reads_to_assembly(racon_polish_wf.out)
