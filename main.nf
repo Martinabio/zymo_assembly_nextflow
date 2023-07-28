@@ -84,24 +84,24 @@ process sort_fastq {
 
 }
 
-process flye_assembly {
+process assembly {
 
     label "process_high"
     label "process_extreme_memory"
     label "process_long"
 
-    container 'biocontainers/flye:2.9.2--py310h2b6aa90_2'
+    container 'biowilko/metamdbg:0.3'
 
     publishDir "${params.outdir}/unpolished_contigs/", mode: 'copy'
 
     input:
     path filtered_fastq
     output:
-    path "flye_output/assembly.fasta"
+    path "metamdbg_out/contigs.fasta.gz"
 
     script:
     """
-    flye --nano-corr ${filtered_fastq} -o flye_output --meta -t $task.cpus -i ${params.flye_iterations}
+    metaMDBG asm -t $task.cpus metamdbg_out/ ${filtered_fastq}
     """
 }
 
